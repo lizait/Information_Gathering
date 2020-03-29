@@ -1,16 +1,15 @@
 import sys
 import nmap
-import nessrest
 
 
 def getOpenPorts(hosts, ports=None, arguments="-sV -sC", sudo=False):
     """
     Scan by nmap given hosts and their ports
 
-    :param hosts: string for hosts
-    :param ports: string for ports
-    :param arguments: string of arguments for nmap
-    :param sudo: true if launch by sudo
+    :param hosts: (string)
+    :param ports: (string)
+    :param arguments: (string) arguments for nmap
+    :param sudo: (boolean) true if launch by sudo
 
     :returns: scan result as dictionary
     :error: can raise AttributeError if bad arguments and nmap.PortScannerError for all problem in nmap
@@ -44,6 +43,7 @@ def getOpenPorts(hosts, ports=None, arguments="-sV -sC", sudo=False):
                     result_scan[host]["tcp"][p]["extrainfo"] = port_info["extrainfo"]
 
     return result_scan
+########################################################################################################################
 
 
 if __name__ == '__main__':
@@ -54,8 +54,8 @@ if __name__ == '__main__':
 
     except:
         t = sys.exc_info()
-        print("Unexpected error:", sys.exc_info()[0])
-    print("next")
+        print("Unexpected error:", sys.exc_info()[1])
+    print("end")
 
 
 
