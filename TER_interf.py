@@ -10,6 +10,30 @@ from functools import partial
 import Nmap_Auto as nmap
 import dnsenum
 
+
+class ScrollableFrame(Frame):
+    def __init__(self, container, *args, **kwargs):
+        super().__init__(container, *args, **kwargs)
+        canvas = Canvas(self, bg="#1f2223", highlightthickness=0, bd=0)
+        scrollbar = Scrollbar(self, orient="vertical", command=canvas.yview, activebackground="#27beec", bg="#27beec",
+                              troughcolor="#1f2223", activerelief="flat", bd=0)
+        self.scrollable_frame = Frame(canvas, bg="#1f2223")
+
+        self.scrollable_frame.bind(
+            "<Configure>",
+            lambda e: canvas.configure(
+                scrollregion=canvas.bbox("all")
+            )
+        )
+
+        canvas.create_window((0, 0), window=self.scrollable_frame, anchor="nw")
+
+        canvas.configure(yscrollcommand=scrollbar.set)
+
+        canvas.pack(side="left", fill="both", expand=True)
+        scrollbar.pack(side="right", fill="y")
+
+
 def interface():
 
     root = Tk()
@@ -121,28 +145,49 @@ def interface():
             if not widget.winfo_name() == topFrameName:
                 widget.destroy()
 
-        dnsEnumFrame = Frame(root, bg="#1f2223", pady=105, padx=300)
+        dnsEnumFrame = Frame(root, bg="#1f2223", pady=60, padx=200)
 
         Label(dnsEnumFrame, text="Fierce scan report for " + domain,
-              bg="#1f2223", fg="#27beec", font=font.Font(size=25), pady=30).pack(side=TOP)
-
+              bg="#1f2223", fg="#27beec", font=font.Font(size=15, weight="bold"), pady=10).pack(side=TOP)
         Label(dnsEnumFrame, text="DNS server: " + dnsEnumResult["serveur DNS"],
-              bg="#1f2223", fg="#27beec", font=font.Font(size=25), pady=30).pack(side=TOP)
-
+              bg="#1f2223", fg="#27beec", font=font.Font(size=15), pady=5, justify="left")\
+            .pack(side=TOP, expand=True, fill='x')
         Label(dnsEnumFrame, text="Master server: " + dnsEnumResult["serveur maitre"],
-              bg="#1f2223", fg="#27beec", font=font.Font(size=25), pady=30).pack(side=TOP)
-
+              bg="#1f2223", fg="#27beec", font=font.Font(size=15), pady=5, anchor="w")\
+            .pack(side=TOP, expand=True, fill='x')
         if dnsEnumResult["Zone"]:
-            pass
+
+            maxLen = 0
+            for dnsName in dnsEnumResult["ZoneInfos"].keys():
+                if len(dnsName) > maxLen:
+                    maxLen = len(dnsName)
+
+            listDNSinfos = ScrollableFrame(dnsEnumFrame)
+
+            for dnsName, infos in dnsEnumResult["ZoneInfos"].items():
+                #Label(listDNSinfos.scrollable_frame, text=dnsName + ": " + infos[0], bg="green", anchor="w")\
+                 #   .pack(expand=True, fill='x')
+
+                containerF = Frame(listDNSinfos.scrollable_frame, bg="green")
+                Label(containerF, text=dnsName, bg="#1f2223", anchor="w", fg="#27beec", width=maxLen).pack(side=LEFT)
+                Label(containerF, text=": " + infos[0], bg="#1f2223", anchor="w", fg="#27beec").pack(side=LEFT, expand=True, fill='x')
+                containerF.pack(side=TOP, expand=True, fill='x')
+
+                """
+                for i in range(1, len(infos)):
+                    containerOtherInfos = Frame(listDNSinfos.scrollable_frame, bg="purple")
+                    Label(containerOtherInfos, text="", width=maxLen).pack(side=LEFT)
+                    Label(containerOtherInfos, text=": " + infos[i]).pack(side=LEFT)
+                    containerOtherInfos.pack(side=TOP)
+                """
+            listDNSinfos.pack(side=TOP, expand=True, fill="both")
+
         else:
             Label(dnsEnumFrame, text="Zone transfert failure",
                   bg="#1f2223", fg="red", font=font.Font(size=25), pady=30).pack(side=TOP)
 
-
-
-
         dnsEnumFrame.pack(side=TOP, expand=True, fill='both')
-
+        root.update()
         return
 
 
