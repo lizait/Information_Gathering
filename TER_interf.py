@@ -25,11 +25,8 @@ class ScrollableFrame(Frame):
                 scrollregion=canvas.bbox("all")
             )
         )
-
         canvas.create_window((0, 0), window=self.scrollable_frame, anchor="nw")
-
         canvas.configure(yscrollcommand=scrollbar.set)
-
         canvas.pack(side="left", fill="both", expand=True)
         scrollbar.pack(side="right", fill="y")
 
@@ -118,28 +115,20 @@ def interface():
         for widget in root.winfo_children():
             if not widget.winfo_name() == topFrameName:
                 widget.destroy()
-
         dnsEnumFrame = Frame(root, bg="#1f2223", pady=105, padx=300)
-
         targetScanFrame = Frame(dnsEnumFrame, bg="#1f2223")
-
         domainEntry = Entry(targetScanFrame)
-
-        Button(targetScanFrame, bg="#29353a", bd=0, fg="#27beec",  activebackground="#384d54", activeforeground="#27beec",
-               text="Scan domain:", command=partial(dnsEnumTarget, domainEntry), highlightthickness=0)\
+        Button(targetScanFrame, bg="#29353a", fg="#27beec",  activebackground="#384d54", activeforeground="#27beec",
+               bd=0, text="Scan domain:", command=partial(dnsEnumTarget, domainEntry), highlightthickness=0)\
             .pack(side=LEFT)
-
         Label(targetScanFrame, bg="#1f2223", fg="#27beec", text="  ").pack(side=LEFT)
-
         domainEntry.pack(side=LEFT)
-
         targetScanFrame.pack(side=TOP)
-
         dnsEnumFrame.pack(side=TOP, expand=True, fill='both')
 
-    def dnsEnumTarget(domainEntry):
-        domain = domainEntry.get()
-        dnsEnumResult = dnsenum.dnsenum(domain)
+    def dnsEnumTarget(domain):
+        domainName = domain.get()
+        dnsEnumResult = dnsenum.dnsenum(domainName)
 
         for widget in root.winfo_children():
             if not widget.winfo_name() == topFrameName:
@@ -147,7 +136,7 @@ def interface():
 
         dnsEnumFrame = Frame(root, bg="#1f2223", pady=60, padx=200)
 
-        Label(dnsEnumFrame, text="Fierce scan report for " + domain,
+        Label(dnsEnumFrame, text="Fierce scan report for " + domainName,
               bg="#1f2223", fg="#27beec", font=font.Font(size=15, weight="bold"), pady=10).pack(side=TOP)
         Label(dnsEnumFrame, text="DNS server: " + dnsEnumResult["serveur DNS"],
               bg="#1f2223", fg="#27beec", font=font.Font(size=15), pady=5, justify="left")\
@@ -155,8 +144,8 @@ def interface():
         Label(dnsEnumFrame, text="Master server: " + dnsEnumResult["serveur maitre"],
               bg="#1f2223", fg="#27beec", font=font.Font(size=15), pady=5, anchor="w")\
             .pack(side=TOP, expand=True, fill='x')
-        if dnsEnumResult["Zone"]:
 
+        if dnsEnumResult["Zone"]:
             maxLen = 0
             for dnsName in dnsEnumResult["ZoneInfos"].keys():
                 if len(dnsName) > maxLen:
@@ -165,33 +154,27 @@ def interface():
             listDNSinfos = ScrollableFrame(dnsEnumFrame)
 
             for dnsName, infos in dnsEnumResult["ZoneInfos"].items():
-                #Label(listDNSinfos.scrollable_frame, text=dnsName + ": " + infos[0], bg="green", anchor="w")\
-                 #   .pack(expand=True, fill='x')
 
-                containerF = Frame(listDNSinfos.scrollable_frame, bg="green")
+                containerF = Frame(listDNSinfos.scrollable_frame)
                 Label(containerF, text=dnsName, bg="#1f2223", anchor="w", fg="#27beec", width=maxLen).pack(side=LEFT)
-                Label(containerF, text=": " + infos[0], bg="#1f2223", anchor="w", fg="#27beec").pack(side=LEFT, expand=True, fill='x')
+                Label(containerF, text=": " + infos[0], bg="#1f2223", anchor="w", fg="#27beec")\
+                    .pack(side=LEFT, expand=True, fill='x')
                 containerF.pack(side=TOP, expand=True, fill='x')
 
-                """
                 for i in range(1, len(infos)):
-                    containerOtherInfos = Frame(listDNSinfos.scrollable_frame, bg="purple")
-                    Label(containerOtherInfos, text="", width=maxLen).pack(side=LEFT)
-                    Label(containerOtherInfos, text=": " + infos[i]).pack(side=LEFT)
-                    containerOtherInfos.pack(side=TOP)
-                """
-            listDNSinfos.pack(side=TOP, expand=True, fill="both")
+                    containerOtherInfos = Frame(listDNSinfos.scrollable_frame)
+                    Label(containerOtherInfos, text="", width=maxLen, bg="#1f2223").pack(side=LEFT)
+                    Label(containerOtherInfos, text=": " + infos[i], bg="#1f2223", anchor="w", fg="#27beec")\
+                        .pack(side=LEFT, expand=True, fill='x')
+                    containerOtherInfos.pack(side=TOP, expand=True, fill='x')
 
+            listDNSinfos.pack(side=TOP, expand=True, fill="both")
         else:
-            Label(dnsEnumFrame, text="Zone transfert failure",
-                  bg="#1f2223", fg="red", font=font.Font(size=25), pady=30).pack(side=TOP)
+            Label(dnsEnumFrame, text="Zone transfert failure", bg="#1f2223", fg="red",
+                  font=font.Font(size=25), pady=30).pack(side=TOP)
 
         dnsEnumFrame.pack(side=TOP, expand=True, fill='both')
-        root.update()
         return
-
-
-
 
     topFrame = Frame(root, relief='flat', bg="red", cursor="crosshair", name="topFrame")
     buttonFont = font.Font(weight="bold", size=10)
