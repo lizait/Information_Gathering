@@ -1,24 +1,22 @@
 from googlesearch import search
-import argparse
 import re
-import sys
 import urllib.request
 import ssl
 import time
 from email_validator import validate_email, EmailNotValidError
 
 
-class Extractor ():
+class Extractor:
 
-    def __init__(self, target) :
+    def __init__(self, target):
         self.target = target
 
-    def googlesearch (self) :
+    def googlesearch(self):
         query = "intext:@"+self.target
         urls = []
-        for j in search (query, tld="co.in", num=3, stop=3, pause=2) :
+        for j in search(query, tld="co.in", num=3, stop=3, pause=2):
             urls.append(j)
-        print (urls)
+        print(urls)
         return urls
 
     @staticmethod
@@ -29,13 +27,12 @@ class Extractor ():
         return html
 
     @staticmethod
-    def replace (data) :
+    def replace(data):
         data = data.decode('ISO-8859-1')
         data = data.replace(" [at] ", "@")
         data = data.replace(" &agrave ", "@")
-        data = data.replace ("at", "@")
+        data = data.replace("at", "@")
         return data
-
 
     @staticmethod
     def process(data):
@@ -49,9 +46,9 @@ class Extractor ():
         return emails
 
     @staticmethod
-    def checkmails (emails) :
+    def checkmails(emails):
         valid = []
-        for email in emails :
+        for email in emails:
             try:
                 v = validate_email(email)  # validate and get info
                 email = v["email"]  # replace with normalized form
@@ -60,12 +57,11 @@ class Extractor ():
                 pass
         return valid
 
-
-    def crawl (self) :
+    def crawl(self):
         emails = []
         urls = self.googlesearch()
         for url in urls:
-            time.sleep (10)
+            time.sleep(10)
             data = self.request(url)
             data = self.replace(data)
             email = self.process(data)
@@ -74,6 +70,7 @@ class Extractor ():
         return emails
 
 
-e= Extractor("mi.parisdescartes.fr")
-print (e.crawl())
+if __name__ == '__main__':
+    e = Extractor("mi.parisdescartes.fr")
+    print(e.crawl())
 

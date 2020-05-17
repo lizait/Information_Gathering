@@ -9,6 +9,7 @@ except ImportError:
 from functools import partial
 import Nmap_Auto as nmap
 import dnsenum
+import MailsExtract
 
 
 class ScrollableFrame(Frame):
@@ -35,7 +36,7 @@ def interface():
 
     root = Tk()
     root.title("Information gathering")
-    root['bg'] = 'blue'
+    root['bg'] = 'black'
 
     mainFrame = Frame(root, bg="green")
     Label(mainFrame, text='Please choose a tool', font=font.Font(weight="bold", size=25), bg="#1f2223", fg="#27beec",
@@ -43,14 +44,11 @@ def interface():
 
     def displayNmapInterface():
 
-        for widget in root.winfo_children():
-            if not widget.winfo_name() == topFrameName:
-                widget.destroy()
-
         nmapFrame = Frame(root, bg="#1f2223", pady=105, padx=300)
 
         Button(nmapFrame, bg="#29353a", bd=0, fg="#27beec", activebackground="#384d54", activeforeground="#27beec",
-               text="Lunch nmap host discovery", command=nmapHostDiscovery,  font=font.Font(size=10), highlightthickness=0)\
+               text="Lunch nmap host discovery", command=nmapHostDiscovery,
+               font=font.Font(size=10), highlightthickness=0)\
             .pack(side=TOP)
 
         Label(nmapFrame, bg="#1f2223", fg="#27beec", text="OR", pady=35, font=font.Font(size=20)).pack(side=TOP)
@@ -61,8 +59,8 @@ def interface():
 
         targetEntry = Entry(targetScanFrame)
 
-        Button(targetScanFrame, bg="#29353a", bd=0, fg="#27beec",  activebackground="#384d54", activeforeground="#27beec",
-               text="Scan target:", command=partial(nmapScanTarget, targetEntry), highlightthickness=0)\
+        Button(targetScanFrame, bg="#29353a", bd=0, fg="#27beec",  activebackground="#384d54", highlightthickness=0,
+               activeforeground="#27beec", text="Scan target:", command=partial(nmapScanTarget, targetEntry))\
             .pack(side=LEFT)
 
         Label(targetScanFrame, bg="#1f2223", fg="#27beec", text="  ").pack(side=LEFT)
@@ -70,6 +68,10 @@ def interface():
         targetEntry.pack(side=LEFT)
 
         targetScanFrame.pack(side=TOP)
+
+        for widget in root.winfo_children():
+            if not widget.winfo_name() == topFrameName and not widget.winfo_name() == nmapFrame.winfo_name():
+                widget.destroy()
 
         nmapFrame.pack(side=TOP, expand=True, fill='both')
 
@@ -105,7 +107,8 @@ def interface():
 
         for port, description in scanResult[target]["tcp"].items():
             Label(nmapPortFrame, bg="#1f2223", fg="#42b97d", font=font.Font(size=15), pady=10,
-                  text= str(port) + "/tcp => Service: " + description["service"] + " => Version: " + description["version"] + ", extra infos:" + description["extrainfo"]
+                  text=str(port) + "/tcp => Service: " + description["service"] + " => Version: " +
+                        description["version"] + ", extra infos:" + description["extrainfo"]
                   ).pack(side=TOP)
 
         nmapPortFrame.pack(side=TOP, expand=True, fill="both")
@@ -176,6 +179,49 @@ def interface():
         dnsEnumFrame.pack(side=TOP, expand=True, fill='both')
         return
 
+    def displayMailExtractorInterface():
+
+        for widget in root.winfo_children():
+            if not widget.winfo_name() == topFrameName:
+                widget.destroy()
+        mainFrame = Frame(root, bg="#1f2223", pady=55, padx=200)
+        Label(mainFrame, text="Mail-extractor", bg="#1f2223", fg="#27beec",
+              font=font.Font(size=15, weight="bold"), pady=10).pack(side=TOP)
+        targetFrame = Frame(mainFrame, bg="#1f2223", pady=30)
+        domainEntry = Entry(targetFrame)
+        Button(targetFrame, bg="#29353a", fg="#27beec", activebackground="#384d54", activeforeground="#27beec",
+               bd=0, text="Scan domain:", command=partial(extractMails, domainEntry), highlightthickness=0) \
+            .pack(side=LEFT)
+        Label(targetFrame, bg="#1f2223", fg="#27beec", text="  ").pack(side=LEFT)
+        domainEntry.pack(side=LEFT)
+        targetFrame.pack(side=TOP)
+        mainFrame.pack(side=TOP, expand=True, fill='both')
+
+    def extractMails(domain):
+        domainName = domain.get()
+        e = MailsExtract.Extractor(domainName)
+        listMails = e.crawl()
+
+        for widget in root.winfo_children():
+            if not widget.winfo_name() == topFrameName:
+                widget.destroy()
+        mainFrameMails = Frame(root, bg="#1f2223", pady=60, padx=200)
+
+        Label(mainFrameMails, text="Found " + str(len(listMails)) + " mails",
+              bg="#1f2223", fg="#27beec", font=font.Font(size=15, weight="bold"), pady=10).pack(side=TOP)
+
+        listFrame = ScrollableFrame(mainFrameMails)
+
+        for mails in listMails:
+            Label(listFrame.scrollable_frame, text=mails, bg="#1f2223", anchor="w", fg="#27beec") \
+                .pack(side=TOP, expand=True, fill='x')
+
+        listFrame.pack(side=TOP, expand=True, fill="both")
+
+        mainFrameMails.pack(side=TOP)
+
+        return
+
     topFrame = Frame(root, relief='flat', bg="red", cursor="crosshair", name="topFrame")
     buttonFont = font.Font(weight="bold", size=10)
 
@@ -198,8 +244,8 @@ def interface():
            activeforeground="#27beec", font=buttonFont, highlightthickness=0)\
         .pack(side=LEFT, expand=True, fill="x")
     Button(topFrame,
-           bg="#1f2223", bd=0, fg="#27beec", text="Mails Extract", command=root.destroy, activebackground="#384d54",
-           activeforeground="#27beec", font=buttonFont, highlightthickness=0)\
+           bg="#1f2223", bd=0, fg="#27beec", text="Mails Extract", command=displayMailExtractorInterface,
+           activebackground="#384d54", activeforeground="#27beec", font=buttonFont, highlightthickness=0)\
         .pack(side=LEFT, expand=True, fill="x")
     topFrame.pack(side=TOP, padx=0, pady=0, fill="x")
 
