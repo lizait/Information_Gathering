@@ -10,6 +10,8 @@ from functools import partial
 import Nmap_Auto as nmap
 import dnsenum
 import MailsExtract
+import WhoIs
+import SHodan
 
 
 class ScrollableFrame(Frame):
@@ -38,9 +40,11 @@ def interface():
     root.title("Information gathering")
     root['bg'] = 'black'
 
-    mainFrame = Frame(root, bg="green")
-    Label(mainFrame, text='Please choose a tool', font=font.Font(weight="bold", size=25), bg="#1f2223", fg="#27beec",
-          height=5, width=30).grid()
+    def displayWelcomeInterface():
+        mainFrame = Frame(root, bg="green")
+        Label(mainFrame, text='Please choose a tool', font=font.Font(weight="bold", size=25), bg="#1f2223",
+              fg="#27beec", height=5, width=30).grid()
+        mainFrame.pack(side=TOP, fill="both", expand=True)
 
     def displayNmapInterface():
 
@@ -222,6 +226,104 @@ def interface():
 
         return
 
+    def displayWhoIsInterface():
+
+        for widget in root.winfo_children():
+            if not widget.winfo_name() == topFrameName:
+                widget.destroy()
+        mainFrame = Frame(root, bg="#1f2223", pady=55, padx=200)
+        Label(mainFrame, text="WhoIs", bg="#1f2223", fg="#27beec",
+              font=font.Font(size=15, weight="bold"), pady=10).pack(side=TOP)
+        targetFrame = Frame(mainFrame, bg="#1f2223", pady=30)
+        domainEntry = Entry(targetFrame)
+        Button(targetFrame, bg="#29353a", fg="#27beec", activebackground="#384d54", activeforeground="#27beec",
+               bd=0, text="Scan domain:", command=partial(launchWhoIs, domainEntry), highlightthickness=0) \
+            .pack(side=LEFT)
+        Label(targetFrame, bg="#1f2223", fg="#27beec", text="  ").pack(side=LEFT)
+        domainEntry.pack(side=LEFT)
+        targetFrame.pack(side=TOP)
+        mainFrame.pack(side=TOP, expand=True, fill='both')
+
+    def launchWhoIs(domain):
+        domainName = domain.get()
+        domainDict = WhoIs.new_whois(domainName)
+
+        for widget in root.winfo_children():
+            if not widget.winfo_name() == topFrameName:
+                widget.destroy()
+        mainFrameMails = Frame(root, bg="#1f2223", pady=25, padx=200)
+
+        Label(mainFrameMails, text="Result for " + domainName,
+              bg="#1f2223", fg="#27beec", font=font.Font(size=15, weight="bold"), pady=30).pack(side=TOP)
+
+        listFrame = ScrollableFrame(mainFrameMails)
+
+        for field, valu in domainDict.items():
+            Label(listFrame.scrollable_frame, text=str(field) + ": " + str(valu), bg="#1f2223", anchor="w",
+                  fg="#27beec").pack(side=TOP, expand=True, fill='x')
+
+        listFrame.pack(side=TOP, expand=True, fill="both")
+
+        mainFrameMails.pack(side=TOP)
+
+    def displayShodanInterface():
+
+        mainFrame = Frame(root, bg="#1f2223", pady=55, padx=200)
+        Label(mainFrame, text="Shodan", bg="#1f2223", fg="#27beec",
+              font=font.Font(size=15, weight="bold"), pady=10).pack(side=TOP)
+        targetFrame = Frame(mainFrame, bg="#1f2223", pady=30)
+        domainEntry = Entry(targetFrame)
+        Button(targetFrame, bg="#29353a", fg="#27beec", activebackground="#384d54", activeforeground="#27beec",
+               bd=0, text="Scan domain:", command=partial(launchShodan, domainEntry), highlightthickness=0) \
+            .pack(side=LEFT)
+        Label(targetFrame, bg="#1f2223", fg="#27beec", text="  ").pack(side=LEFT)
+        domainEntry.pack(side=LEFT)
+        targetFrame.pack(side=TOP)
+        for widget in root.winfo_children():
+            if not widget.winfo_name() == topFrameName and not mainFrame.winfo_name() == widget.winfo_name():
+                widget.destroy()
+        mainFrame.pack(side=TOP, expand=True, fill='both')
+
+    def launchShodan(domain):
+        domainName = domain.get()
+        domainDict = SHodan.SHodan(domainName)
+
+        for widget in root.winfo_children():
+            if not widget.winfo_name() == topFrameName:
+                widget.destroy()
+        mainFrame = Frame(root, bg="#1f2223", pady=25, padx=200)
+
+        Label(mainFrame, text="Result for " + domainName,
+              bg="#1f2223", fg="#27beec", font=font.Font(size=15, weight="bold"), pady=30).pack(side=TOP)
+
+        listFrame = ScrollableFrame(mainFrame)
+
+        for field, valu in domainDict.items():
+            if not field == "information" and not valu is None and len(valu) > 0:
+                Label(listFrame.scrollable_frame, text=str(field) + ": " + str(valu), bg="#1f2223", anchor="w",
+                      fg="#27beec").pack(side=TOP, expand=True, fill='x')
+
+        if "information" in domainDict:
+            maxLen = 11
+            for banner in domainDict["information"]:
+                containerF = Frame(listFrame.scrollable_frame)
+                Label(containerF, text="port: " + str(banner["port"]), bg="#1f2223", anchor="w", fg="#27beec")\
+                    .pack(side=LEFT, expand=True, fill='x')
+                containerF.pack(side=TOP, expand=True, fill='x')
+
+                for field, valu in banner.items():
+                    if not field == "port":
+                        containerOtherInfos = Frame(listFrame.scrollable_frame)
+                        Label(containerOtherInfos, text="", width=maxLen, bg="#1f2223").pack(side=LEFT)
+                        Label(containerOtherInfos, text=field + ": " + str(valu), bg="#1f2223", anchor="w",
+                              fg="#27beec").pack(side=LEFT, expand=True, fill='x')
+                        containerOtherInfos.pack(side=TOP, expand=True, fill='x')
+
+        listFrame.pack(side=TOP, expand=True, fill="both")
+        mainFrame.pack(side=TOP, expand=True, fill="both")
+        return
+
+
     topFrame = Frame(root, relief='flat', bg="red", cursor="crosshair", name="topFrame")
     buttonFont = font.Font(weight="bold", size=10)
 
@@ -236,11 +338,11 @@ def interface():
            activeforeground="#27beec", font=buttonFont, highlightthickness=0)\
         .pack(side=LEFT, expand=True, fill="x")
     Button(topFrame,
-           bg="#1f2223", bd=0, fg="#27beec", text="WhoIs", command=root.destroy, activebackground="#384d54",
+           bg="#1f2223", bd=0, fg="#27beec", text="WhoIs", command=displayWhoIsInterface, activebackground="#384d54",
            activeforeground="#27beec", font=buttonFont, highlightthickness=0)\
         .pack(side=LEFT, expand=True, fill="x")
     Button(topFrame,
-           bg="#1f2223", bd=0, fg="#27beec", text="shodan", command=root.destroy, activebackground="#384d54",
+           bg="#1f2223", bd=0, fg="#27beec", text="shodan", command=displayShodanInterface, activebackground="#384d54",
            activeforeground="#27beec", font=buttonFont, highlightthickness=0)\
         .pack(side=LEFT, expand=True, fill="x")
     Button(topFrame,
@@ -251,7 +353,7 @@ def interface():
 
     topFrameName = topFrame.winfo_name()
 
-    mainFrame.pack(side=TOP, fill="both", expand=True)
+    displayWelcomeInterface()
 
     root.mainloop()
 

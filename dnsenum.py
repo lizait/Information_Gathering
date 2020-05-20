@@ -37,7 +37,6 @@ def getZone(output):
     if zone == ' failure':
         return False
     else:
-        zone = 'success'
         return True
 
 
@@ -94,11 +93,11 @@ def getiprange(output):
 
 
 def parselistrange(list_sub):
-    list = []
+    lst = []
     for sub in list_sub:
         sub = sub + '}'
-        list.append(sub.replace("\n", ""))
-    return list
+        lst.append(sub.replace("\n", ""))
+    return lst
 
 
 def strtodict(list_sub):
