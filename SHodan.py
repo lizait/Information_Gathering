@@ -107,7 +107,7 @@ def SHodan (target) :
                "too many requests sent from same ip address in short period of time\n  "
                "please wait a few minutes before you try again ;)")
         
-print (SHodan("google.fr"))
+print (SHodan("www.packtpub.com"))
 
 
 
