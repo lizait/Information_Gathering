@@ -88,9 +88,7 @@ class Extractor ():
                 except requests.exceptions.ConnectionError:
                         r.status_code = "Connection refused"
 
+e= Extractor("mi.parisdescartes.fr")
+print (e.crawl())
 
-
-if __name__ == '__main__':
-    e = Extractor("mi.parisdescartes.fr")
-    print(e.crawl())
 
