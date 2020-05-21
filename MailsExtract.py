@@ -13,11 +13,11 @@ class Extractor:
         self.target = target
 
     def googlesearch(self):
-        query = "intext:@"+self.target
+        query = "intext:@" + self.target
         urls = []
         for j in search(query, tld="co.in", num=20, stop=20, pause=2):
             urls.append(j)
-        print (urls)
+        print(urls)
         return urls
 
     @staticmethod
@@ -36,16 +36,14 @@ class Extractor:
 
         return data
 
-
     @staticmethod
     def process(data):
-    
+
         emails = []
         regex = re.compile(('[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$'))
         for email in re.findall(regex, data):
             emails.append(email)
         return emails
-
 
     @staticmethod
     def checkmails(emails):
@@ -69,16 +67,19 @@ class Extractor:
             data = self.replace(data)
 
             for re_match in re.finditer(EMAIL_REGEX, data):
+                emails = []
                 try:
                     address = re_match.group()
 
                     bool_result_with_dns = is_email(address, check_dns=True)
                     detailed_result_with_dns = is_email(address, check_dns=True, diagnose=True)
                     if bool_result_with_dns:
-                        print(address)
+                        emails.append(address)
                 except requests.exceptions.ConnectionError:
                     print("connection refused")
-
+                return emails
+            
+   
 
 if __name__ == '__main__':
     e = Extractor("mi.parisdescartes.fr")
