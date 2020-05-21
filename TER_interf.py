@@ -18,7 +18,7 @@ class ScrollableFrame(Frame):
     def __init__(self, container, *args, **kwargs):
         super().__init__(container, *args, **kwargs)
         canvas = Canvas(self, bg="#1f2223", highlightthickness=0, bd=0)
-        scrollbar = Scrollbar(self, orient="vertical", command=canvas.yview, activebackground="#27beec", bg="#27beec",
+        scrollbar = Scrollbar(self, orient="vertical", command=canvas.yview, activebackground="#29839e", bg="#29839e",
                               troughcolor="#1f2223", activerelief="flat", bd=0)
         self.scrollable_frame = Frame(canvas, bg="#1f2223")
 
@@ -48,14 +48,14 @@ def interface():
 
     def displayNmapInterface():
 
-        nmapFrame = Frame(root, bg="#1f2223", pady=105, padx=300)
+        nmapFrame = Frame(root, bg="#1f2223", pady=55, padx=210)
 
         Button(nmapFrame, bg="#29353a", bd=0, fg="#27beec", activebackground="#384d54", activeforeground="#27beec",
                text="Lunch nmap host discovery", command=nmapHostDiscovery,
                font=font.Font(size=10), highlightthickness=0)\
             .pack(side=TOP)
 
-        Label(nmapFrame, bg="#1f2223", fg="#27beec", text="OR", pady=35, font=font.Font(size=20)).pack(side=TOP)
+        Label(nmapFrame, bg="#1f2223", fg="#27beec", text="OR", pady=25, font=font.Font(size=15)).pack(side=TOP)
 
         #targetScanFrame = Frame(nmapFrame, bg="#1f2223").pack(side=TOP)
 
@@ -122,16 +122,18 @@ def interface():
         for widget in root.winfo_children():
             if not widget.winfo_name() == topFrameName:
                 widget.destroy()
-        dnsEnumFrame = Frame(root, bg="#1f2223", pady=105, padx=300)
-        targetScanFrame = Frame(dnsEnumFrame, bg="#1f2223")
-        domainEntry = Entry(targetScanFrame)
-        Button(targetScanFrame, bg="#29353a", fg="#27beec",  activebackground="#384d54", activeforeground="#27beec",
-               bd=0, text="Scan domain:", command=partial(dnsEnumTarget, domainEntry), highlightthickness=0)\
+        mainFrame = Frame(root, bg="#1f2223", pady=55, padx=200)
+        Label(mainFrame, text="Dns Enum", bg="#1f2223", fg="#27beec",
+              font=font.Font(size=15, weight="bold"), pady=10).pack(side=TOP)
+        targetFrame = Frame(mainFrame, bg="#1f2223", pady=30)
+        domainEntry = Entry(targetFrame)
+        Button(targetFrame, bg="#29353a", fg="#27beec", activebackground="#384d54", activeforeground="#27beec",
+               bd=0, text="Scan domain:", command=partial(dnsEnumTarget, domainEntry), highlightthickness=0) \
             .pack(side=LEFT)
-        Label(targetScanFrame, bg="#1f2223", fg="#27beec", text="  ").pack(side=LEFT)
+        Label(targetFrame, bg="#1f2223", fg="#27beec", text="  ").pack(side=LEFT)
         domainEntry.pack(side=LEFT)
-        targetScanFrame.pack(side=TOP)
-        dnsEnumFrame.pack(side=TOP, expand=True, fill='both')
+        targetFrame.pack(side=TOP)
+        mainFrame.pack(side=TOP, expand=True, fill='both')
 
     def dnsEnumTarget(domain):
         domainName = domain.get()
@@ -211,7 +213,7 @@ def interface():
                 widget.destroy()
         mainFrameMails = Frame(root, bg="#1f2223", pady=60, padx=200)
 
-        Label(mainFrameMails, text="Found " + str(len(listMails)) + " mails",
+        Label(mainFrameMails, text="Found " + str(len(listMails)) + " mails in " + domainName,
               bg="#1f2223", fg="#27beec", font=font.Font(size=15, weight="bold"), pady=10).pack(side=TOP)
 
         listFrame = ScrollableFrame(mainFrameMails)
@@ -222,7 +224,7 @@ def interface():
 
         listFrame.pack(side=TOP, expand=True, fill="both")
 
-        mainFrameMails.pack(side=TOP)
+        mainFrameMails.pack(side=TOP, expand=True, fill='both')
 
         return
 
@@ -264,7 +266,7 @@ def interface():
 
         listFrame.pack(side=TOP, expand=True, fill="both")
 
-        mainFrameMails.pack(side=TOP)
+        mainFrameMails.pack(side=TOP, expand=True, fill="both")
 
     def displayShodanInterface():
 
@@ -323,30 +325,29 @@ def interface():
         mainFrame.pack(side=TOP, expand=True, fill="both")
         return
 
-
     topFrame = Frame(root, relief='flat', bg="red", cursor="crosshair", name="topFrame")
     buttonFont = font.Font(weight="bold", size=10)
 
-    Button(topFrame, bg="#1f2223", bd=0, fg="#27beec", activebackground="#384d54", activeforeground="#27beec",
-           font=buttonFont, highlightthickness=0, text="dnsenum", command=displayDnsEnumInterface, )\
-        .pack(side=LEFT, expand=True, fill="x")
-    Button(topFrame,
-           bg="#1f2223", bd=0, fg="#27beec", text="nmap", command=displayNmapInterface, activebackground="#384d54",
-           activeforeground="#27beec", font=buttonFont, highlightthickness=0).pack(side=LEFT, expand=True, fill="x")
-    Button(topFrame,
-           bg="#1f2223", bd=0, fg="#27beec", text="nessus", command=root.destroy, activebackground="#384d54",
-           activeforeground="#27beec", font=buttonFont, highlightthickness=0)\
-        .pack(side=LEFT, expand=True, fill="x")
     Button(topFrame,
            bg="#1f2223", bd=0, fg="#27beec", text="WhoIs", command=displayWhoIsInterface, activebackground="#384d54",
+           activeforeground="#27beec", font=buttonFont, highlightthickness=0).pack(side=LEFT, expand=True, fill="x")
+    Button(topFrame, bg="#1f2223", bd=0, fg="#27beec", activebackground="#384d54", activeforeground="#27beec",
+           font=buttonFont, highlightthickness=0, text="Shodan", command=displayShodanInterface, ) \
+        .pack(side=LEFT, expand=True, fill="x")
+    Button(topFrame,
+           bg="#1f2223", bd=0, fg="#27beec", text="Mails Extract", command=displayMailExtractorInterface, activebackground="#384d54",
            activeforeground="#27beec", font=buttonFont, highlightthickness=0)\
         .pack(side=LEFT, expand=True, fill="x")
     Button(topFrame,
-           bg="#1f2223", bd=0, fg="#27beec", text="shodan", command=displayShodanInterface, activebackground="#384d54",
+           bg="#1f2223", bd=0, fg="#27beec", text="Dns Enum", command=displayDnsEnumInterface, activebackground="#384d54",
            activeforeground="#27beec", font=buttonFont, highlightthickness=0)\
         .pack(side=LEFT, expand=True, fill="x")
     Button(topFrame,
-           bg="#1f2223", bd=0, fg="#27beec", text="Mails Extract", command=displayMailExtractorInterface,
+           bg="#1f2223", bd=0, fg="#27beec", text="Nmap", command=displayNmapInterface, activebackground="#384d54",
+           activeforeground="#27beec", font=buttonFont, highlightthickness=0)\
+        .pack(side=LEFT, expand=True, fill="x")
+    Button(topFrame,
+           bg="#1f2223", bd=0, fg="#27beec", text="Nessus", command=root.destroy,
            activebackground="#384d54", activeforeground="#27beec", font=buttonFont, highlightthickness=0)\
         .pack(side=LEFT, expand=True, fill="x")
     topFrame.pack(side=TOP, padx=0, pady=0, fill="x")

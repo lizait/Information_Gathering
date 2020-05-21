@@ -76,6 +76,8 @@ class Extractor:
                         emails.append(address)
                 except requests.exceptions.ConnectionError:
                     print("connection refused")
+                except:
+                    pass
         return emails
 
 
