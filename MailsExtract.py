@@ -67,19 +67,17 @@ class Extractor:
             data = self.replace(data)
 
             for re_match in re.finditer(EMAIL_REGEX, data):
-                emails = []
                 try:
                     address = re_match.group()
-
                     bool_result_with_dns = is_email(address, check_dns=True)
                     detailed_result_with_dns = is_email(address, check_dns=True, diagnose=True)
+
                     if bool_result_with_dns:
                         emails.append(address)
                 except requests.exceptions.ConnectionError:
                     print("connection refused")
-                return emails
-            
-   
+        return emails
+
 
 if __name__ == '__main__':
     e = Extractor("mi.parisdescartes.fr")
