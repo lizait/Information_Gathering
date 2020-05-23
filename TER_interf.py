@@ -1,17 +1,19 @@
 try:
     # for Python2
-    import Tkinter
+    from Tkinter import *
+    from Tkinter import font
 except ImportError:
     # for Python3
     from tkinter import *
     from tkinter import font
 
-from functools import partial
-import Nmap_Auto as nmap
+import functools
 import dnsenum
+import Nmap_Auto as nmap
 import MailsExtract
 import WhoIs
 import SHodan
+import nessusPy
 
 
 class ScrollableFrame(Frame):
@@ -51,7 +53,7 @@ def interface():
         nmapFrame = Frame(root, bg="#1f2223", pady=55, padx=210)
 
         Button(nmapFrame, bg="#29353a", bd=0, fg="#27beec", activebackground="#384d54", activeforeground="#27beec",
-               text="Lunch nmap host discovery", command=nmapHostDiscovery,
+               text="Launch nmap host discovery", command=nmapHostDiscovery,
                font=font.Font(size=10), highlightthickness=0)\
             .pack(side=TOP)
 
@@ -64,7 +66,7 @@ def interface():
         targetEntry = Entry(targetScanFrame)
 
         Button(targetScanFrame, bg="#29353a", bd=0, fg="#27beec",  activebackground="#384d54", highlightthickness=0,
-               activeforeground="#27beec", text="Scan target:", command=partial(nmapScanTarget, targetEntry))\
+               activeforeground="#27beec", text="Scan target:", command=functools.partial(nmapScanTarget, targetEntry))\
             .pack(side=LEFT)
 
         Label(targetScanFrame, bg="#1f2223", fg="#27beec", text="  ").pack(side=LEFT)
@@ -80,7 +82,7 @@ def interface():
         nmapFrame.pack(side=TOP, expand=True, fill='both')
 
     def nmapHostDiscovery():
-        listTarget = nmap.getOpenPorts("192.168.43.0/24", arguments="-sn")
+        listTarget = nmap.getOpenPorts("192.168.0.0/24", arguments="-sn")
         for widget in root.winfo_children():
             if not widget.winfo_name() == topFrameName:
                 widget.destroy()
@@ -110,7 +112,7 @@ def interface():
               bg="#1f2223", fg="#27beec", font=font.Font(size=25), pady=30).pack(side=TOP)
 
         for port, description in scanResult[target]["tcp"].items():
-            Label(nmapPortFrame, bg="#1f2223", fg="#42b97d", font=font.Font(size=15), pady=10,
+            Label(nmapPortFrame, bg="#1f2223", fg="#42b97d", font=font.Font(size=10), pady=10,
                   text=str(port) + "/tcp => Service: " + description["service"] + " => Version: " +
                         description["version"] + ", extra infos:" + description["extrainfo"]
                   ).pack(side=TOP)
@@ -128,7 +130,7 @@ def interface():
         targetFrame = Frame(mainFrame, bg="#1f2223", pady=30)
         domainEntry = Entry(targetFrame)
         Button(targetFrame, bg="#29353a", fg="#27beec", activebackground="#384d54", activeforeground="#27beec",
-               bd=0, text="Scan domain:", command=partial(dnsEnumTarget, domainEntry), highlightthickness=0) \
+               bd=0, text="Scan domain:", command=functools.partial(dnsEnumTarget, domainEntry), highlightthickness=0) \
             .pack(side=LEFT)
         Label(targetFrame, bg="#1f2223", fg="#27beec", text="  ").pack(side=LEFT)
         domainEntry.pack(side=LEFT)
@@ -196,7 +198,7 @@ def interface():
         targetFrame = Frame(mainFrame, bg="#1f2223", pady=30)
         domainEntry = Entry(targetFrame)
         Button(targetFrame, bg="#29353a", fg="#27beec", activebackground="#384d54", activeforeground="#27beec",
-               bd=0, text="Scan domain:", command=partial(extractMails, domainEntry), highlightthickness=0) \
+               bd=0, text="Scan domain:", command=functools.partial(extractMails, domainEntry), highlightthickness=0) \
             .pack(side=LEFT)
         Label(targetFrame, bg="#1f2223", fg="#27beec", text="  ").pack(side=LEFT)
         domainEntry.pack(side=LEFT)
@@ -239,7 +241,7 @@ def interface():
         targetFrame = Frame(mainFrame, bg="#1f2223", pady=30)
         domainEntry = Entry(targetFrame)
         Button(targetFrame, bg="#29353a", fg="#27beec", activebackground="#384d54", activeforeground="#27beec",
-               bd=0, text="Scan domain:", command=partial(launchWhoIs, domainEntry), highlightthickness=0) \
+               bd=0, text="Scan domain:", command=functools.partial(launchWhoIs, domainEntry), highlightthickness=0) \
             .pack(side=LEFT)
         Label(targetFrame, bg="#1f2223", fg="#27beec", text="  ").pack(side=LEFT)
         domainEntry.pack(side=LEFT)
@@ -276,7 +278,7 @@ def interface():
         targetFrame = Frame(mainFrame, bg="#1f2223", pady=30)
         domainEntry = Entry(targetFrame)
         Button(targetFrame, bg="#29353a", fg="#27beec", activebackground="#384d54", activeforeground="#27beec",
-               bd=0, text="Scan domain:", command=partial(launchShodan, domainEntry), highlightthickness=0) \
+               bd=0, text="Scan domain:", command=functools.partial(launchShodan, domainEntry), highlightthickness=0) \
             .pack(side=LEFT)
         Label(targetFrame, bg="#1f2223", fg="#27beec", text="  ").pack(side=LEFT)
         domainEntry.pack(side=LEFT)
@@ -325,6 +327,57 @@ def interface():
         mainFrame.pack(side=TOP, expand=True, fill="both")
         return
 
+    def displayNessusInterface():
+
+        for widget in root.winfo_children():
+            if not widget.winfo_name() == topFrameName:
+                widget.destroy()
+        mainFrame = Frame(root, bg="#1f2223", pady=55, padx=200)
+        Label(mainFrame, text="Nessus API", bg="#1f2223", fg="#27beec",
+              font=font.Font(size=15, weight="bold"), pady=10).pack(side=TOP)
+
+        fieldWidth = 15
+        entryTab = []
+        fieldNames = ["login", "password", "target"]
+
+        for i in range(3):
+            containerFrame = Frame(mainFrame, bg="#1f2223", pady=10)
+            Label(containerFrame, text=fieldNames[i] + ": ", bg="#1f2223", fg="#27beec",
+                  font=font.Font(size=11, weight="bold"), pady=8, width=fieldWidth, justify=LEFT).pack(side=LEFT)
+            entryTab.append(Entry(containerFrame))
+            entryTab[i].pack(side=LEFT)
+            containerFrame.pack(side=TOP)
+        Label(mainFrame, text=" ", bg="#1f2223", fg="#27beec",
+              font=font.Font(size=15, weight="bold"), pady=6).pack(side=TOP)
+        Button(mainFrame, bg="#29353a", fg="#27beec", activebackground="#384d54", activeforeground="#27beec",
+               bd=0, text="Launch basic nessus scan", command=functools.partial(launchNessusBasicScan, entryTab),
+               highlightthickness=0).pack(side=TOP)
+        mainFrame.pack(side=TOP, expand=True, fill='both')
+
+    def launchNessusBasicScan(listEntry):
+
+        login = listEntry[0].get()
+        password = listEntry[1].get()
+        target = listEntry[2].get()
+
+        for widget in root.winfo_children():
+            if not widget.winfo_name() == topFrameName:
+                widget.destroy()
+        try:
+            nessusPy.doScanByNessus(login, password, target, "basic")
+            mainFrame = Frame(root, bg="green")
+            Label(mainFrame, text='Nessus scan launched', font=font.Font(weight="bold", size=25), bg="#1f2223",
+                  fg="#27beec", height=5).pack(side=TOP)
+            mainFrame.pack(side=TOP, fill="both", expand=True)
+        except:
+            t = sys.exc_info()
+            mainFrame = Frame(root, bg="green")
+            Label(mainFrame, text=sys.exc_info()[1], font=font.Font(weight="bold", size=25), bg="#1f2223",
+                  fg="#27beec", height=5, padx=40).pack(side=TOP, expand=True, fill="both")
+            mainFrame.pack(side=TOP, fill="both", expand=True)
+
+            print("Unexpected error:", sys.exc_info()[1])
+
     topFrame = Frame(root, relief='flat', bg="red", cursor="crosshair", name="topFrame")
     buttonFont = font.Font(weight="bold", size=10)
 
@@ -335,19 +388,19 @@ def interface():
            font=buttonFont, highlightthickness=0, text="Shodan", command=displayShodanInterface, ) \
         .pack(side=LEFT, expand=True, fill="x")
     Button(topFrame,
-           bg="#1f2223", bd=0, fg="#27beec", text="Mails Extract", command=displayMailExtractorInterface, activebackground="#384d54",
-           activeforeground="#27beec", font=buttonFont, highlightthickness=0)\
+           bg="#1f2223", bd=0, fg="#27beec", text="Mails Extract", command=displayMailExtractorInterface,
+           activebackground="#384d54", activeforeground="#27beec", font=buttonFont, highlightthickness=0)\
         .pack(side=LEFT, expand=True, fill="x")
     Button(topFrame,
-           bg="#1f2223", bd=0, fg="#27beec", text="Dns Enum", command=displayDnsEnumInterface, activebackground="#384d54",
-           activeforeground="#27beec", font=buttonFont, highlightthickness=0)\
+           bg="#1f2223", bd=0, fg="#27beec", text="Dns Enum", command=displayDnsEnumInterface,
+           activebackground="#384d54", activeforeground="#27beec", font=buttonFont, highlightthickness=0)\
         .pack(side=LEFT, expand=True, fill="x")
     Button(topFrame,
            bg="#1f2223", bd=0, fg="#27beec", text="Nmap", command=displayNmapInterface, activebackground="#384d54",
            activeforeground="#27beec", font=buttonFont, highlightthickness=0)\
         .pack(side=LEFT, expand=True, fill="x")
     Button(topFrame,
-           bg="#1f2223", bd=0, fg="#27beec", text="Nessus", command=root.destroy,
+           bg="#1f2223", bd=0, fg="#27beec", text="Nessus", command=displayNessusInterface,
            activebackground="#384d54", activeforeground="#27beec", font=buttonFont, highlightthickness=0)\
         .pack(side=LEFT, expand=True, fill="x")
     topFrame.pack(side=TOP, padx=0, pady=0, fill="x")

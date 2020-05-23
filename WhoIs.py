@@ -24,9 +24,12 @@ def listtodict(str):
     print(list)
     dict = {}
     for i in list:
-        key, value = i.split(":", 1)
-        value = value.strip()
-        dict[key] = value
+        try:
+            key, value = i.split(":", 1)
+            value = value.strip()
+            dict[key] = value
+        except:
+            pass
     return dict
 
 
